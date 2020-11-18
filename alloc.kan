@@ -1,0 +1,49 @@
+import "libc";
+
+delegate def Alloc(a: *Allocator, bytes: usize): *void;
+delegate def Realloc(a: *Allocator, p: *void, bytes: usize): *void;
+delegate def Dealloc(a: *Allocator, p: *void);
+
+type Allocator struct {
+    _alloc: Alloc,
+    _realloc: Realloc,
+    _dealloc: Dealloc
+}
+
+def (a: *Allocator) alloc(bytes: usize): *void {
+    return a._alloc(a, bytes);
+}
+
+def (a: *Allocator) realloc(p: *void, bytes: usize): *void {
+    return a._realloc(a, p, bytes);
+}
+
+def (a: *Allocator) dealloc(p: *void) {
+    a._dealloc(a, p);
+}
+
+type SystemAllocator struct {
+    allocator: Allocator
+}
+
+def system_allocator(): SystemAllocator {
+    return SystemAllocator {
+        allocator: Allocator {
+            _alloc: &system_alloc,
+            _realloc: &system_realloc,
+            _dealloc: &system_dealloc
+        }
+    };
+}
+
+def system_alloc(a: *Allocator, bytes: usize): *void {
+    return libc.malloc(bytes);
+}
+
+def system_realloc(a: *Allocator, p: *void, bytes: usize): *void {
+    return libc.realloc(p, bytes);
+}
+
+def system_dealloc(a: *Allocator, p: *void) {
+    libc.free(p);
+}
