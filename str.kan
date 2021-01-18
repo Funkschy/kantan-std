@@ -1,4 +1,5 @@
 import "num";
+import "dbg";
 import "libc";
 
 type String struct {
@@ -164,6 +165,11 @@ def (v: View) clone(): String {
     return from_l(v.data, v.len);
 }
 
+def (v: View) at(i: usize): i8 {
+    dbg.assert(i < v.len, "view out of bounds read");
+    return *(v.data + i);
+}
+
 def (v: View) drop(n: usize): View {
     if n >= v.len {
         return view("", 0);
@@ -178,6 +184,29 @@ def (v: View) take(n: usize): View {
     }
 
     return view(v.data, n);
+}
+
+// TODO: replace with Option
+def (v: View) find(substr: View): usize {
+    if substr.len > v.len {
+        return -1;
+    }
+
+    for let i: usize = 0; i < v.len - substr.len + 1; i += 1 {
+        let matched = true;
+        for let j: usize = 0; j < substr.len; j += 1 {
+            if *(v.data + i + j) != *(substr.data + j) {
+                matched = false;
+                break;
+            }
+        }
+
+        if matched {
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 def (v: View) eq(other: View): bool {
@@ -196,23 +225,31 @@ def (v: View) ends_with(postfix: View): bool {
 }
 
 def (v: View) contains(other: View): bool {
-    if other.len > v.len {
+    return v.find(other) != -1;
+}
+
+def (v: View) is_number(): bool {
+    if v.len == 0 {
         return false;
     }
 
-    for let i: usize = 0; i < v.len - other.len + 1; i += 1 {
-        let matched = true;
-        for let j: usize = 0; j < other.len; j += 1 {
-            if *(v.data + i + j) != *(other.data + j) {
-                matched = false;
-                break;
-            }
+    let start: usize = 0;
+
+    let c = v.at(0);
+    if c == '-' {
+        if v.len == 1 {
+            return false;
         }
 
-        if matched {
-            return true;
+        start = 1;
+    }
+
+    for let i: usize = start; i < v.len; i += 1 {
+        let c = v.at(i);
+        if c < '0' || c > '9' {
+            return false;
         }
     }
 
-    return false;
+    return true;
 }
