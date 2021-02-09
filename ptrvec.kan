@@ -67,6 +67,14 @@ def (v: *Vec) get(i: usize): *void {
     return null;
 }
 
+def (v: *Vec) get_ptr(i: usize): **void {
+    if i < v.len {
+        return v.elements + i;
+    }
+
+    return null;
+}
+
 def (v: *Vec) unsafe_get(i: usize): *void {
     return *(v.elements + i);
 }
