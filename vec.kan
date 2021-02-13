@@ -59,6 +59,21 @@ def (v: *Vec) set(i: usize, elem: *void) {
     }
 }
 
+def (v: *Vec) remove(i: usize) {
+    dbg.assert(i < v.len, "out of bounds index");
+    // remove the last element
+    if i == v.len - 1 {
+        v.len -= 1;
+        return;
+    }
+
+    let elem = v.elements + i * v.elem_size;
+    let next = elem + v.elem_size;
+
+    libc.memmove(elem, next, (v.len - i) * v.elem_size);
+    v.len -= 1;
+}
+
 def (v: *Vec) get(i: usize, ptr: *void): bool {
     if i >= 0 && i < v.len {
         libc.memcpy(ptr, v.elements + i * v.elem_size, v.elem_size);
