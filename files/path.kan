@@ -52,6 +52,16 @@ def (p: *Path) parent(): Path {
     return *p;
 }
 
+def (p: *Path) filename(): Path {
+    let last_separator_ptr = impl.last_separator_ptr(p);
+    if last_separator_ptr == null {
+        return *p;
+    }
+
+    last_separator_ptr += 1;
+    return create_l(last_separator_ptr, p.len - (last_separator_ptr - p.inner));
+}
+
 def (first: *Path) count_overlap(second: *Path): usize {
     let len = first.len;
     if second.len < first.len {
@@ -105,15 +115,6 @@ def (b: *Buf) as_path(): Path {
 
 def (b: *Buf) free() {
     b.inner.free();
-}
-
-def (b: *Buf) push(p: Path) {
-    let separator = str.view("/", 1);
-    if !b.inner.view().ends_with(separator) {
-        b.inner.push(separator);
-    }
-
-    b.inner.push(p.as_view());
 }
 
 def (base: *Path) merge_abs_rel(child: *Path, dest: *Buf): Result {
