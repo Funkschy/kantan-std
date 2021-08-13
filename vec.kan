@@ -1,5 +1,6 @@
-import "libc";
 import "dbg";
+import "num";
+import "libc";
 
 type Vec struct {
     len: usize,
@@ -111,6 +112,16 @@ def (v: *Vec) resize() {
         v.cap = v.cap * 2;
         v.elements = libc.realloc(v.elements, v.cap * v.elem_size);
     }
+}
+
+def (v: *Vec) reserve(min_cap: usize) {
+    if min_cap <= v.cap {
+        return;
+    }
+
+    let desired_cap = num.next_pow_of_2(min_cap as i64) as usize;
+    v.cap = desired_cap;
+    v.elements = libc.realloc(v.elements, v.cap * v.elem_size);
 }
 
 // reserve enough memory for the next insertion and return a pointer to the memory, where the next
